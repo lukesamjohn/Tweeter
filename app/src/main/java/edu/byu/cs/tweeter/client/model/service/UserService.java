@@ -14,16 +14,13 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 
-/*
-Defines an observer interface
-Runs background takes
-Contains android message handler that propagates task messages up to observer
- */
 
 public class UserService {
 
-    //define an observer interface
-    //the presenter is calling this method, presenters call services
+    /**
+     * Observer interface used by presenter
+     * The methods are the tasks that we want to accomplish when a User click "Login"
+     */
     public interface LoginObserver {
         void loginSucceeded(AuthToken authToken, User user);
         void loginFailed(String message);
@@ -31,10 +28,13 @@ public class UserService {
     }
 
 
+    /**
+     * Executes the login task on a new thread
+     * @param alias The alias typed in by the user
+     * @param password The password typed in by the user
+     * @param observer A LoginObserver used in a handler created in the presenter that passes info to the View
+     */
     public void login(String alias, String password, LoginObserver observer) {
-
-        // Run a login task to login the user
-        //get the code from the login fragment
         LoginTask loginTask = new LoginTask(alias, password, new LoginHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(loginTask);
@@ -45,15 +45,16 @@ public class UserService {
      */
     private static class LoginHandler extends Handler {
 
-        // put in an observer so that handler can call it when task is done
-        // essentially just propagate it up
         private final LoginObserver observer;
         public  LoginHandler(LoginObserver observer) {
             this.observer = observer;
         }
 
-        //take a login observer parameter
-
+        /**
+         * Handles all the different login messages that could arise and passes them to the
+         * presenter who passes them to the view
+         * @param msg
+         */
         @Override
         public void handleMessage(@NonNull Message msg) {
 
