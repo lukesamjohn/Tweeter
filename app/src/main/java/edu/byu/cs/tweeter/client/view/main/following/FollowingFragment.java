@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,21 +20,19 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import edu.byu.cs.client.R;
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
-import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.presenter.FollowingPresenter;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.client.view.util.ImageUtils;
+import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 /**
- * Implements the "Following" tab.
+ * The fragment that displays on the 'Following' tab.
  */
-public class FollowingFragment extends Fragment {
+public class FollowingFragment extends Fragment implements FollowingPresenter.View {
 
     private static final String LOG_TAG = "FollowingFragment";
     private static final String USER_KEY = "UserKey";
@@ -43,17 +40,15 @@ public class FollowingFragment extends Fragment {
     private static final int LOADING_DATA_VIEW = 0;
     private static final int ITEM_VIEW = 1;
 
-    private static final int PAGE_SIZE = 10;
-
-    private User user;
+    private FollowingPresenter presenter;
 
     private FollowingRecyclerViewAdapter followingRecyclerViewAdapter;
 
     /**
-     * Creates an instance of the fragment and places the target user in an arguments
+     * Creates an instance of the fragment and places the user and auth token in an arguments
      * bundle assigned to the fragment.
      *
-     * @param user the user whose following is being displayed (not necessarily the logged-in user).
+     * @param user the logged in user.
      * @return the fragment.
      */
     public static FollowingFragment newInstance(User user) {
@@ -67,11 +62,52 @@ public class FollowingFragment extends Fragment {
     }
 
     @Override
+    public void navigateToUser(User user) {
+        Intent intent = new Intent(getContext(), MainActivity.class);
+        intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
+        startActivity(intent);
+    }
+
+    /**
+     * Called to notify the view when data loading starts and ends.
+     *
+     * @param value true if we are loading, false otherwise.
+     */
+    @Override
+    public void setLoading(boolean value) {
+        followingRecyclerViewAdapter.setLoading(value);
+    }
+
+    /**
+     * Called to pass "following" users to the view when they are loaded.
+     *
+     * @param newUsers list of new "following" users.
+     */
+    @Override
+    public void addItems(List<User> newUsers) {
+        followingRecyclerViewAdapter.addItems(newUsers);
+    }
+
+    /**
+     * Directs the view to display the specified error message to the user.
+     *
+     * @param message error message to be displayed.
+     */
+    @Override
+    public void displayMessage(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_following, container, false);
 
-        user = (User) getArguments().getSerializable(USER_KEY);
+        User user = (User) getArguments().getSerializable(USER_KEY);
+
+        AuthToken authToken = Cache.getInstance().getCurrUserAuthToken();
+
+        presenter = new FollowingPresenter(this, user, authToken);
 
         RecyclerView followingRecyclerView = view.findViewById(R.id.followingRecyclerView);
 
@@ -82,6 +118,8 @@ public class FollowingFragment extends Fragment {
         followingRecyclerView.setAdapter(followingRecyclerViewAdapter);
 
         followingRecyclerView.addOnScrollListener(new FollowRecyclerViewPaginationScrollListener(layoutManager));
+
+        presenter.loadMoreItems();
 
         return view;
     }
@@ -100,23 +138,21 @@ public class FollowingFragment extends Fragment {
          *
          * @param itemView the view on which the user will be displayed.
          */
-        FollowingHolder(@NonNull View itemView) {
+        FollowingHolder(@NonNull View itemView, int viewType) {
             super(itemView);
 
-            userImage = itemView.findViewById(R.id.userImage);
-            userAlias = itemView.findViewById(R.id.userAlias);
-            userName = itemView.findViewById(R.id.userName);
+            if(viewType == ITEM_VIEW) {
+                userImage = itemView.findViewById(R.id.userImage);
+                userAlias = itemView.findViewById(R.id.userAlias);
+                userName = itemView.findViewById(R.id.userName);
+                AuthToken authToken = Cache.getInstance().getCurrUserAuthToken();
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    GetUserTask getUserTask = new GetUserTask(Cache.getInstance().getCurrUserAuthToken(),
-                            userAlias.getText().toString(), new GetUserHandler());
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                    executor.execute(getUserTask);
-                    Toast.makeText(getContext(), "Getting user's profile...", Toast.LENGTH_LONG).show();
-                }
-            });
+                itemView.setOnClickListener(view -> presenter.gotoUser(authToken, userAlias.getText().toString()));
+            } else {
+                userImage = null;
+                userAlias = null;
+                userName = null;
+            }
         }
 
         /**
@@ -129,29 +165,6 @@ public class FollowingFragment extends Fragment {
             userAlias.setText(user.getAlias());
             userName.setText(user.getName());
         }
-
-        /**
-         * Message handler (i.e., observer) for GetUserTask.
-         */
-        private class GetUserHandler extends Handler {
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                boolean success = msg.getData().getBoolean(GetUserTask.SUCCESS_KEY);
-                if (success) {
-                    User user = (User) msg.getData().getSerializable(GetUserTask.USER_KEY);
-
-                    Intent intent = new Intent(getContext(), MainActivity.class);
-                    intent.putExtra(MainActivity.CURRENT_USER_KEY, user);
-                    startActivity(intent);
-                } else if (msg.getData().containsKey(GetUserTask.MESSAGE_KEY)) {
-                    String message = msg.getData().getString(GetUserTask.MESSAGE_KEY);
-                    Toast.makeText(getContext(), "Failed to get user's profile: " + message, Toast.LENGTH_LONG).show();
-                } else if (msg.getData().containsKey(GetUserTask.EXCEPTION_KEY)) {
-                    Exception ex = (Exception) msg.getData().getSerializable(GetUserTask.EXCEPTION_KEY);
-                    Toast.makeText(getContext(), "Failed to get user's profile because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            }
-        }
     }
 
     /**
@@ -161,16 +174,21 @@ public class FollowingFragment extends Fragment {
 
         private final List<User> users = new ArrayList<>();
 
-        private User lastFollowee;
-
-        private boolean hasMorePages;
         private boolean isLoading = false;
 
         /**
-         * Creates an instance and loads the first page of following data.
+         * Called to notify the adapter when data loading starts and ends.
+         *
+         * @param value true if we are loading, false otherwise.
          */
-        FollowingRecyclerViewAdapter() {
-            loadMoreItems();
+        void setLoading(boolean value) {
+            isLoading = value;
+            if (value) {
+                addLoadingFooter();
+            }
+            else {
+                removeLoadingFooter();
+            }
         }
 
         /**
@@ -209,10 +227,10 @@ public class FollowingFragment extends Fragment {
         }
 
         /**
-         * Creates a view holder for a followee to be displayed in the RecyclerView or for a message
-         * indicating that new rows are being loaded if we are waiting for rows to load.
+         *  Creates a view holder for a followee to be displayed in the RecyclerView or for a message
+         *  indicating that new rows are being loaded if we are waiting for rows to load.
          *
-         * @param parent   the parent view.
+         * @param parent the parent view.
          * @param viewType the type of the view (ignored in the current implementation).
          * @return the view holder.
          */
@@ -222,14 +240,14 @@ public class FollowingFragment extends Fragment {
             LayoutInflater layoutInflater = LayoutInflater.from(FollowingFragment.this.getContext());
             View view;
 
-            if (viewType == LOADING_DATA_VIEW) {
-                view = layoutInflater.inflate(R.layout.loading_row, parent, false);
+            if(viewType == LOADING_DATA_VIEW) {
+                view =layoutInflater.inflate(R.layout.loading_row, parent, false);
 
             } else {
                 view = layoutInflater.inflate(R.layout.user_row, parent, false);
             }
 
-            return new FollowingHolder(view);
+            return new FollowingHolder(view, viewType);
         }
 
         /**
@@ -237,19 +255,18 @@ public class FollowingFragment extends Fragment {
          * we are loading new data, the display at that position will be the data loading footer.
          *
          * @param followingHolder the ViewHolder to which the followee should be bound.
-         * @param position        the position (in the list of followees) that contains the followee to be
-         *                        bound.
+         * @param position the position (in the list of followees) that contains the followee to be
+         *                 bound.
          */
         @Override
         public void onBindViewHolder(@NonNull FollowingHolder followingHolder, int position) {
-            if (!isLoading) {
+            if(!isLoading) {
                 followingHolder.bindUser(users.get(position));
             }
         }
 
         /**
          * Returns the current number of followees available for display.
-         *
          * @return the number of followees available for display.
          */
         @Override
@@ -270,22 +287,6 @@ public class FollowingFragment extends Fragment {
         }
 
         /**
-         * Causes the Adapter to display a loading footer and make a request to get more following
-         * data.
-         */
-        void loadMoreItems() {
-            if (!isLoading) {   // This guard is important for avoiding a race condition in the scrolling code.
-                isLoading = true;
-                addLoadingFooter();
-
-                GetFollowingTask getFollowingTask = new GetFollowingTask(Cache.getInstance().getCurrUserAuthToken(),
-                        user, PAGE_SIZE, lastFollowee, new GetFollowingHandler());
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                executor.execute(getFollowingTask);
-            }
-        }
-
-        /**
          * Adds a dummy user to the list of users so the RecyclerView will display a view (the
          * loading footer view) at the bottom of the list.
          */
@@ -299,34 +300,6 @@ public class FollowingFragment extends Fragment {
          */
         private void removeLoadingFooter() {
             removeItem(users.get(users.size() - 1));
-        }
-
-
-        /**
-         * Message handler (i.e., observer) for GetFollowingTask.
-         */
-        private class GetFollowingHandler extends Handler {
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                isLoading = false;
-                removeLoadingFooter();
-
-                boolean success = msg.getData().getBoolean(GetFollowingTask.SUCCESS_KEY);
-                if (success) {
-                    List<User> followees = (List<User>) msg.getData().getSerializable(GetFollowingTask.FOLLOWEES_KEY);
-                    hasMorePages = msg.getData().getBoolean(GetFollowingTask.MORE_PAGES_KEY);
-
-                    lastFollowee = (followees.size() > 0) ? followees.get(followees.size() - 1) : null;
-
-                    followingRecyclerViewAdapter.addItems(followees);
-                } else if (msg.getData().containsKey(GetFollowingTask.MESSAGE_KEY)) {
-                    String message = msg.getData().getString(GetFollowingTask.MESSAGE_KEY);
-                    Toast.makeText(getContext(), "Failed to get following: " + message, Toast.LENGTH_LONG).show();
-                } else if (msg.getData().containsKey(GetFollowingTask.EXCEPTION_KEY)) {
-                    Exception ex = (Exception) msg.getData().getSerializable(GetFollowingTask.EXCEPTION_KEY);
-                    Toast.makeText(getContext(), "Failed to get following because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            }
         }
     }
 
@@ -353,8 +326,8 @@ public class FollowingFragment extends Fragment {
          * indicated that there was more data to load.
          *
          * @param recyclerView the RecyclerView.
-         * @param dx           the amount of horizontal scroll.
-         * @param dy           the amount of vertical scroll.
+         * @param dx the amount of horizontal scroll.
+         * @param dy the amount of vertical scroll.
          */
         @Override
         public void onScrolled(@NotNull RecyclerView recyclerView, int dx, int dy) {
@@ -364,17 +337,12 @@ public class FollowingFragment extends Fragment {
             int totalItemCount = layoutManager.getItemCount();
             int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
 
-            if (!followingRecyclerViewAdapter.isLoading && followingRecyclerViewAdapter.hasMorePages) {
-                if ((visibleItemCount + firstVisibleItemPosition) >=
-                        totalItemCount && firstVisibleItemPosition >= 0) {
-                    // Run this code later on the UI thread
-                    final Handler handler = new Handler(Looper.getMainLooper());
-                    handler.postDelayed(() -> {
-                        followingRecyclerViewAdapter.loadMoreItems();
-                    }, 0);
-                }
+            if ((visibleItemCount + firstVisibleItemPosition) >=
+                    totalItemCount && firstVisibleItemPosition >= 0) {
+                // Run this code later on the UI thread
+                final Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(() -> presenter.loadMoreItems(), 0);
             }
         }
     }
-
 }

@@ -3,6 +3,8 @@ package edu.byu.cs.tweeter.client.backgroundTask;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import edu.byu.cs.tweeter.client.util.ByteArrayUtils;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -28,5 +30,6 @@ public class BackgroundTaskUtils {
             throw e;
         }
     }
+
 
 }
