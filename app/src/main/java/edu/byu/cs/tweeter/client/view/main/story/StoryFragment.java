@@ -63,7 +63,6 @@ public class StoryFragment extends Fragment implements StoryPresenter.View{
     @Override
     public void displayMessage(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-
     }
 
     @Override
