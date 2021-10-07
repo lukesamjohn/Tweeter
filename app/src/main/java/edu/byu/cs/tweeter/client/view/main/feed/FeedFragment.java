@@ -46,7 +46,6 @@ public class FeedFragment extends Fragment implements FeedPresenter.View {
     private static final int LOADING_DATA_VIEW = 0;
     private static final int ITEM_VIEW = 1;
 
-    private static final int PAGE_SIZE = 10;
 
     private FeedPresenter presenter;
 
@@ -116,6 +115,7 @@ public class FeedFragment extends Fragment implements FeedPresenter.View {
         feedRecyclerView.setAdapter(feedRecyclerViewAdapter);
 
         feedRecyclerView.addOnScrollListener(new FeedRecyclerViewPaginationScrollListener(layoutManager));
+        presenter.loadMoreItems();
 
         return view;
     }
@@ -145,13 +145,7 @@ public class FeedFragment extends Fragment implements FeedPresenter.View {
             post = itemView.findViewById(R.id.statusPost);
             datetime = itemView.findViewById(R.id.statusDatetime);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //TODO: insert go to user functionality here, or maybe just have it do a mesage?
-                    Toast.makeText(getContext(), "You selected '" + userName.getText() + "'.", Toast.LENGTH_SHORT).show();
-                }
-            });
+            itemView.setOnClickListener(view -> Toast.makeText(getContext(), "You selected '" + userName.getText() + "'.", Toast.LENGTH_SHORT).show());
         }
 
         /**
