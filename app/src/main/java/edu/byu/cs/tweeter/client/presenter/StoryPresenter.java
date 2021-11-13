@@ -15,6 +15,7 @@ public class StoryPresenter implements StatusService.GetStoryObserver, UserServi
     private final User user;
     private final AuthToken authToken;
 
+
     public StoryPresenter(StoryPresenter.View view, User user, AuthToken authToken) {
         this.view = view;
         this.user = user;

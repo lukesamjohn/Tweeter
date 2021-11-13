@@ -177,7 +177,7 @@ public class FeedFragment extends Fragment implements FeedPresenter.View {
                         if (clickable.contains("http")) {
                             presenter.gotoWebsite(clickable);
                         } else {
-                            presenter.gotoUser(Cache.getInstance().getCurrUserAuthToken(), userAlias.getText().toString());
+                            presenter.gotoUser(Cache.getInstance().getCurrUserAuthToken(), clickable);
                         }
                     }
 

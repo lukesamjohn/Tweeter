@@ -3,6 +3,7 @@ package edu.byu.cs.tweeter.client.model.service;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -10,8 +11,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import edu.byu.cs.client.R;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
+import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
+import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
@@ -19,19 +24,6 @@ import edu.byu.cs.tweeter.model.domain.User;
  * Contains the business logic for getting the users a user is following.
  */
 public class FollowService {
-
-    /**
-     * An observer interface to be implemented by observers who want to be notified when
-     * asynchronous operations complete.
-     */
-    public interface GetFolloweesObserver {
-        void getFolloweesSuccess(List<User> followees, boolean hasMorePages);
-
-        void getFolloweesFailure(String message);
-
-        void getFolloweesException(Exception exception);
-    }
-
 
     /**
      * An observer interface to be implemented by observers who want to be notified when
@@ -84,6 +76,19 @@ public class FollowService {
     }
 
 
+    /**
+     * An observer interface to be implemented by observers who want to be notified when
+     * asynchronous operations complete.
+     */
+    public interface GetFolloweesObserver {
+        void getFolloweesSuccess(List<User> followees, boolean hasMorePages);
+
+        void getFolloweesFailure(String message);
+
+        void getFolloweesException(Exception exception);
+    }
+
+
 
     /**
      * Requests the users that the user specified in the request is following.
@@ -129,6 +134,53 @@ public class FollowService {
             } else if (bundle.containsKey(GetFollowingTask.EXCEPTION_KEY)) {
                 Exception ex = (Exception) bundle.getSerializable(GetFollowingTask.EXCEPTION_KEY);
                 observer.getFolloweesException(ex);
+            }
+        }
+    }
+
+    /**
+     * An observer interface to be implemented by observers who want to be notified when
+     * asynchronous operations complete.
+     */
+    public interface IsFollowerObserver {
+        void isFollowerSuccess(boolean isFollower);
+
+        void isFollowerFailure(String message);
+
+        void isFollowerException(Exception exception);
+    }
+
+    public void isFollower(AuthToken authToken, User follower, User followee, IsFollowerObserver observer) {
+        IsFollowerTask isFollowerTask = new IsFollowerTask(authToken,
+                follower, followee, new IsFollowerHandler(observer));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(isFollowerTask);
+    }
+
+    // IsFollowerHandler
+
+    private class IsFollowerHandler extends Handler {
+
+        private final IsFollowerObserver observer;
+
+        public IsFollowerHandler(IsFollowerObserver observer) {
+            this.observer = observer;
+        }
+
+        @Override
+        public void handleMessage(Message message) {
+            Bundle bundle = message.getData();
+            boolean success = bundle.getBoolean(IsFollowerTask.SUCCESS_KEY);
+            if (success) {
+                boolean isFollower = bundle.getBoolean(IsFollowerTask.IS_FOLLOWER_KEY);
+                observer.isFollowerSuccess(isFollower);
+
+            } else if (bundle.containsKey(IsFollowerTask.MESSAGE_KEY)) {
+                String errorMessage = "Failed to determine following relationship: " + bundle.getString(IsFollowerTask.MESSAGE_KEY);
+                observer.isFollowerFailure(errorMessage);
+            } else if (bundle.containsKey(IsFollowerTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) bundle.getSerializable(IsFollowerTask.EXCEPTION_KEY);
+                observer.isFollowerException(ex);
             }
         }
     }
