@@ -1,19 +1,13 @@
 package edu.byu.cs.tweeter.client.presenter;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
-import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
+import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.client.model.service.UserService;
-import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class MainActivityPresenter implements FollowService.IsFollowerObserver, FollowService.FollowObserver, FollowService.UnfollowObserver,
-        FollowService.GetFollowersCountObserver, FollowService.GetFollowingCountObserver, UserService.LogoutObserver {
+        FollowService.GetFollowersCountObserver, FollowService.GetFollowingCountObserver, UserService.LogoutObserver, StatusService.PostStatusObserver {
 
     private final MainActivityPresenter.View view;
     private final User user;
@@ -34,6 +28,8 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         void showLogoutToast(String message);
         void cancelLogoutToast();
         void logoutUser();
+        void showPostToast(String message);
+        void cancelPostToast();
     }
 
 
@@ -163,6 +159,31 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
     @Override
     public void logoutException(Exception ex) {
         String message = "Failed to logout because of exception: " + ex.getMessage();
+        view.displayMessage(message);
+    }
+
+
+    // Posting Status
+
+    public void postStatus (String post) {
+        view.showPostToast("Posting Status...");
+        new StatusService().postStatus(authToken, post, this);
+    }
+
+    @Override
+    public void postStatusSuccess(String message) {
+        view.cancelPostToast();
+        view.displayMessage(message);
+    }
+
+    @Override
+    public void postStatusFailure(String message) {
+        view.displayMessage(message);
+    }
+
+    @Override
+    public void postStatusException(Exception exception) {
+        String message = "Failed to post status because of exception: " + exception.getMessage();
         view.displayMessage(message);
     }
 }
