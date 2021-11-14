@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -15,8 +16,10 @@ import java.util.concurrent.Executors;
 
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.backgroundTask.LoginTask;
+import edu.byu.cs.tweeter.client.backgroundTask.LogoutTask;
 import edu.byu.cs.tweeter.client.backgroundTask.RegisterTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
@@ -24,25 +27,6 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class UserService {
 
-    /**
-     * LoginObserver interface used by presenter
-     * The methods are the tasks that we want to accomplish when a User click "Login"
-     */
-    public interface LoginObserver {
-        void loginSucceeded(AuthToken authToken, User user);
-        void loginFailed(String message);
-        void loginThrewException(Exception ex);
-    }
-
-    /**
-     * Registration observer interface to be used by the presenter
-     * Methods are outcomes that could happen upon clicking login using the data from this Model
-     */
-    public interface RegisterObserver {
-        void registrationSucceeded(AuthToken authToken, User user);
-        void registrationFailed(String message);
-        void registrationThrewException(Exception ex);
-    }
 
     // observer for every task, and every task has a handler
     public interface GetUserObserver {
@@ -89,6 +73,17 @@ public class UserService {
 
 
     /**
+     * LoginObserver interface used by presenter
+     * The methods are the tasks that we want to accomplish when a User click "Login"
+     */
+    public interface LoginObserver {
+        void loginSucceeded(AuthToken authToken, User user);
+        void loginFailed(String message);
+        void loginThrewException(Exception ex);
+    }
+
+
+    /**
      * Executes the login task on a new thread
      * @param alias The alias typed in by the user
      * @param password The password typed in by the user
@@ -100,22 +95,6 @@ public class UserService {
         executor.execute(loginTask);
     }
 
-    public void register(String firstName, String lastName, String alias, String password,
-         ImageView image, RegisterObserver registerObserver) {
-        RegisterTask registerTask = new RegisterTask(firstName, lastName, alias, password, imageToByteArray(image), new RegisterHandler(registerObserver));
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(registerTask);
-    }
-
-
-    private String imageToByteArray(ImageView imageToUpload) {
-        // Convert image to byte array.
-        Bitmap image = ((BitmapDrawable) imageToUpload.getDrawable()).getBitmap();
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-        byte[] imageBytes = bos.toByteArray();
-        return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
-    }
 
     /**
      * Message handler (i.e., Observer) for LoginTask
@@ -150,6 +129,23 @@ public class UserService {
         }
     }
 
+    /**
+     * Registration observer interface to be used by the presenter
+     * Methods are outcomes that could happen upon clicking login using the data from this Model
+     */
+    public interface RegisterObserver {
+        void registrationSucceeded(AuthToken authToken, User user);
+        void registrationFailed(String message);
+        void registrationThrewException(Exception ex);
+    }
+    public void register(String firstName, String lastName, String alias, String password,
+                         ImageView image, RegisterObserver registerObserver) {
+        RegisterTask registerTask = new RegisterTask(firstName, lastName, alias, password, imageToByteArray(image), new RegisterHandler(registerObserver));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(registerTask);
+    }
+
+
     // RegisterHandler
     private static class RegisterHandler extends Handler {
         private final RegisterObserver registerObserver;
@@ -176,4 +172,58 @@ public class UserService {
             }
         }
     }
+
+
+
+    public interface LogoutObserver {
+        void logoutSuccess();
+        void logoutFailure(String message);
+        void logoutException(Exception ex);
+    }
+
+    public void logout(AuthToken authToken, LogoutObserver observer) {
+        LogoutTask logoutTask = new LogoutTask(authToken, new LogoutHandler(observer));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(logoutTask);
+    }
+
+
+
+    // LogoutHandler
+
+    private class LogoutHandler extends Handler {
+
+        LogoutObserver observer;
+
+        public LogoutHandler(LogoutObserver observer) {
+            this.observer = observer;
+        }
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            boolean success = msg.getData().getBoolean(LogoutTask.SUCCESS_KEY);
+            if (success) {
+                observer.logoutSuccess();
+            } else if (msg.getData().containsKey(LogoutTask.MESSAGE_KEY)) {
+                String message = "Failed to logout: " + msg.getData().getString(LogoutTask.MESSAGE_KEY);
+                observer.logoutFailure(message);
+            } else if (msg.getData().containsKey(LogoutTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(LogoutTask.EXCEPTION_KEY);
+                observer.logoutException(ex);
+            }
+        }
+    }
+
+
+    // Helper Functions
+
+    private String imageToByteArray(ImageView imageToUpload) {
+        // Convert image to byte array.
+        Bitmap image = ((BitmapDrawable) imageToUpload.getDrawable()).getBitmap();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+        byte[] imageBytes = bos.toByteArray();
+        return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+    }
+
 }

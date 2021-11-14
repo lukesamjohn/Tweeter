@@ -7,11 +7,13 @@ import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
+import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class MainActivityPresenter implements FollowService.IsFollowerObserver, FollowService.FollowObserver, FollowService.UnfollowObserver, FollowService.GetFollowersCountObserver, FollowService.GetFollowingCountObserver {
+public class MainActivityPresenter implements FollowService.IsFollowerObserver, FollowService.FollowObserver, FollowService.UnfollowObserver,
+        FollowService.GetFollowersCountObserver, FollowService.GetFollowingCountObserver, UserService.LogoutObserver {
 
     private final MainActivityPresenter.View view;
     private final User user;
@@ -29,6 +31,9 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         void displayMessage(String message);
         void updateFollowerCount(int count);
         void updateFolloweeCount(int count);
+        void showLogoutToast(String message);
+        void cancelLogoutToast();
+        void logoutUser();
     }
 
 
@@ -105,7 +110,6 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         new FollowService().updateSelectedUserFollowingAndFollowers(authToken, selectedUser, this, this);
     }
 
-
     @Override
     public void getFollowersCountSuccess(int count) {
         view.updateFollowerCount(count);
@@ -135,6 +139,30 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
     @Override
     public void getFollowingCountException(Exception exception) {
         String message = "Failed to get following count because of exception: " + exception.getMessage();
+        view.displayMessage(message);
+    }
+
+    // Logging out
+
+    public void logout() {
+        view.showLogoutToast("Logging Out...");
+        new UserService().logout(authToken, this);
+    }
+
+    @Override
+    public void logoutSuccess() {
+        view.cancelLogoutToast();
+        view.logoutUser();
+    }
+
+    @Override
+    public void logoutFailure(String message) {
+        view.displayMessage(message);
+    }
+
+    @Override
+    public void logoutException(Exception ex) {
+        String message = "Failed to logout because of exception: " + ex.getMessage();
         view.displayMessage(message);
     }
 }
