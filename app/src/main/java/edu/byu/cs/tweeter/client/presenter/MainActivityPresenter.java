@@ -13,12 +13,14 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
     private final MainActivityPresenter.View view;
     private final User user;
     private final AuthToken authToken;
+    private final StatusService statusService;
 
 
     public MainActivityPresenter(MainActivityPresenter.View view, User user, AuthToken authToken) {
         this.view = view;
         this.user = user;
         this.authToken = authToken;
+        statusService = new StatusService();
     }
 
     public interface View extends AuthenticatedView {
@@ -98,6 +100,7 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         new UserService().logout(authToken, this);
     }
 
+
     @Override
     public void logoutSuccess() {
         view.cancelLogoutToast();
@@ -109,7 +112,7 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
 
     public void postStatus (String post) {
         view.showPostToast("Posting Status...");
-        new StatusService().postStatus(authToken, post, this);
+        getStatusService().postStatus(authToken, post, this);
     }
 
     @Override
@@ -117,5 +120,10 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         view.cancelPostToast();
         view.displayMessage(message);
     }
+
+    public StatusService getStatusService() {
+        return statusService;
+    }
+
 
 }
