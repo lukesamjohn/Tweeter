@@ -98,6 +98,7 @@ public class FollowingFragment extends Fragment implements FollowingPresenter.Vi
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

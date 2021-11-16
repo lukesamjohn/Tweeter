@@ -2,11 +2,10 @@ package edu.byu.cs.tweeter.client.presenter;
 
 
 import edu.byu.cs.tweeter.client.model.service.UserService;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.client.presenter.views.AuthenticateView;
 
 //you have to make the class implement a login observer interface
-public class LoginPresenter implements UserService.LoginObserver {
+public class LoginPresenter extends AuthenticatePresenter implements UserService.LoginObserver {
 
     /**
      * A View interface for the LoginFragment to implement. Contains
@@ -14,15 +13,7 @@ public class LoginPresenter implements UserService.LoginObserver {
      * To communicate with the user. Now all these methods are testable without having to
      * be able to view the screen.
      */
-    public interface View {
-        void navigateToUser(User user);
-
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
-    }
+    public interface View extends AuthenticateView {}
 
     private final View view; // the LoginFragment that represents what is on the screen
 
@@ -32,6 +23,7 @@ public class LoginPresenter implements UserService.LoginObserver {
      * @param view A View defined by the presenter and implemented in LoginFragment
      */
     public LoginPresenter(View view) {
+        super(view);
         this.view = view;
     }
 
@@ -42,9 +34,7 @@ public class LoginPresenter implements UserService.LoginObserver {
      */
     public void login(String alias, String password) {
 
-        // clear any previous messages that were on the screen
-        view.clearErrorMessage();
-        view.clearInfoMessage();
+        clearMessages();
 
         // make sure the username and password have the proper format to be looked up in the database
         String message = validateLogin(alias, password);
@@ -77,41 +67,5 @@ public class LoginPresenter implements UserService.LoginObserver {
         return null;
     }
 
-    /*
-    These are really the heart of the Presenter idea - they are implementations of methods declared
-     in the Observer interface from the UserService (Model) class. Data gets passed from here in the
-     Presenter class into the Model class. The Model (UserService) class manipulates the data, then
-     calls these Observer methods (which, by the way, were defined in the UserService class) which
-     then call methods in the View class to display this information. Those methods in the View
-     (LoginFragment) class were declared here in the Presenter class as part of the View interface.
-    */
-    /**
-     * Start main activity and greet the user
-     * @param authToken the authtoken for the user this session
-     * @param user the user that was logged in
-     */
-    @Override
-    public void loginSucceeded(AuthToken authToken, User user) {
-        view.navigateToUser(user);
-        view.clearErrorMessage();
-        view.displayInfoMessage("Hello " + user.getName());
-    }
 
-    /**
-     * Let the user know that the login attempt failed
-     * @param message Message explaining the failure
-     */
-    @Override
-    public void loginFailed(String message) {
-        view.displayErrorMessage("Login failed: " + message);
-    }
-
-    /**
-     * Let the user or system know that an exception happened
-     * @param ex the exception that happened in the UserService
-     */
-    @Override
-    public void loginThrewException(Exception ex) {
-        view.displayErrorMessage("Login failed: " + ex.getMessage());
-    }
 }

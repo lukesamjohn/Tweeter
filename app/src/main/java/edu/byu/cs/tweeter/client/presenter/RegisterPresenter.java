@@ -3,26 +3,16 @@ package edu.byu.cs.tweeter.client.presenter;
 import android.widget.ImageView;
 
 import edu.byu.cs.tweeter.client.model.service.UserService;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.client.presenter.views.AuthenticateView;
 
-public class RegisterPresenter implements UserService.RegisterObserver {
+public class RegisterPresenter extends AuthenticatePresenter implements UserService.RegisterObserver {
     /**
      * A View interface for the LoginFragment to implement. Contains
      * all the functions that the presenter should be able to call on the view
      * To communicate with the user. Now all these methods are testable without having to
      * be able to view the screen.
      */
-    public interface View {
-        void navigateToUser(User user);
-
-
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
-    }
+    public interface View extends AuthenticateView { }
 
     private final RegisterPresenter.View view; // the LoginFragment that represents what is on the screen
 
@@ -33,13 +23,13 @@ public class RegisterPresenter implements UserService.RegisterObserver {
      * @param view A View defined by the presenter and implemented in LoginFragment
      */
     public RegisterPresenter(RegisterPresenter.View view) {
+        super(view);
         this.view = view;
     }
 
     public void register(String firstName, String lastName, String alias, String password, ImageView image) {
         // clear any previous messages that were on the screen
-        view.clearErrorMessage();
-        view.clearInfoMessage();
+        clearMessages();
 
         // make sure the username and password have the proper format to be looked up in the database
         String message = validateRegistration(firstName, lastName, alias, password, image);
@@ -51,6 +41,8 @@ public class RegisterPresenter implements UserService.RegisterObserver {
             view.displayErrorMessage("Registration failed: " + message);
         }
     }
+
+
 
     private String validateRegistration(String firstName, String lastName, String alias, String password, ImageView image) {
         if (firstName.length() == 0) {
@@ -76,22 +68,5 @@ public class RegisterPresenter implements UserService.RegisterObserver {
         }
 
         return null;
-    }
-
-    @Override
-    public void registrationSucceeded(AuthToken authToken, User user) {
-        view.navigateToUser(user);
-        view.clearErrorMessage();
-        view.displayInfoMessage("Hello " + user.getName());
-    }
-
-    @Override
-    public void registrationFailed(String message) {
-        view.displayErrorMessage("Failed to register: " + message);
-    }
-
-    @Override
-    public void registrationThrewException(Exception ex) {
-        view.displayErrorMessage("Failed to register because of exception: " + ex.getMessage());
     }
 }

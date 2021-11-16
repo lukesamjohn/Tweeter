@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.client.backgroundTask;
+package edu.byu.cs.tweeter.client.model.service.backgroundTask;
 
 import android.util.Log;
 
@@ -31,5 +31,8 @@ public class BackgroundTaskUtils {
         }
     }
 
-
+    public static void runTask(Runnable task) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(task);
+    }
 }

@@ -3,6 +3,7 @@ package edu.byu.cs.tweeter.client.presenter;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.client.model.service.UserService;
+import edu.byu.cs.tweeter.client.presenter.views.AuthenticatedView;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
@@ -20,9 +21,8 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         this.authToken = authToken;
     }
 
-    public interface View {
+    public interface View extends AuthenticatedView {
         void updateFollowButtonAppearance(boolean isFollower);
-        void displayMessage(String message);
         void updateFollowerCount(int count);
         void updateFolloweeCount(int count);
         void showLogoutToast(String message);
@@ -44,16 +44,9 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
     }
 
     @Override
-    public void isFollowerFailure(String message) {
-        view.displayMessage(message);
+    public void handleFailure(String message) {
+        view.displayMessage("Error in Main Activity Presenter: " + message);
     }
-
-    @Override
-    public void isFollowerException(Exception exception) {
-        String message = "Failed to determine following relationship because of exception: " + exception.getMessage();
-        view.displayMessage(message);
-    }
-
 
     // Presenter's link to follow service
     public void follow(User selectedUser) {
@@ -65,17 +58,6 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         view.updateFollowButtonAppearance(added);
         view.displayMessage(message);
         updateSelectedUserFollowingAndFollowers(selectedUser);
-    }
-
-    @Override
-    public void followFailure(String message) {
-        view.displayMessage(message);
-    }
-
-    @Override
-    public void followException(Exception exception) {
-        String message = "Failed to follow because of exception: " + exception.getMessage();
-        view.displayMessage(message);
     }
 
     // Presenter's link to unfollow service
@@ -90,16 +72,7 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         updateSelectedUserFollowingAndFollowers(selectedUser);
     }
 
-    @Override
-    public void unfollowFailure(String message) {
-        view.displayMessage(message);
-    }
 
-    @Override
-    public void unfollowException(Exception exception) {
-        String message = "Failed to unfollow because of exception: " + exception.getMessage();
-        view.displayMessage(message);
-    }
 
     // Updating Selected User's following and followers count
     public void updateSelectedUserFollowingAndFollowers(User selectedUser) {
@@ -112,31 +85,11 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
     }
 
     @Override
-    public void getFollowersCountFailure(String message) {
-        view.displayMessage(message);
-    }
-
-    @Override
-    public void getFollowersCountException(Exception exception) {
-        String message = "Failed to get followers count because of exception: " + exception.getMessage();
-        view.displayMessage(message);
-    }
-
-    @Override
     public void getFollowingCountSuccess(int count) {
         view.updateFolloweeCount(count);
     }
 
-    @Override
-    public void getFollowingCountFailure(String message) {
-        view.displayMessage(message);
-    }
 
-    @Override
-    public void getFollowingCountException(Exception exception) {
-        String message = "Failed to get following count because of exception: " + exception.getMessage();
-        view.displayMessage(message);
-    }
 
     // Logging out
 
@@ -149,17 +102,6 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
     public void logoutSuccess() {
         view.cancelLogoutToast();
         view.logoutUser();
-    }
-
-    @Override
-    public void logoutFailure(String message) {
-        view.displayMessage(message);
-    }
-
-    @Override
-    public void logoutException(Exception ex) {
-        String message = "Failed to logout because of exception: " + ex.getMessage();
-        view.displayMessage(message);
     }
 
 
@@ -176,14 +118,4 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
         view.displayMessage(message);
     }
 
-    @Override
-    public void postStatusFailure(String message) {
-        view.displayMessage(message);
-    }
-
-    @Override
-    public void postStatusException(Exception exception) {
-        String message = "Failed to post status because of exception: " + exception.getMessage();
-        view.displayMessage(message);
-    }
 }
