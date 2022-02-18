@@ -7,6 +7,7 @@ import edu.byu.cs.tweeter.client.presenter.views.AuthenticatedView;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
+
 public class MainActivityPresenter implements FollowService.IsFollowerObserver, FollowService.FollowObserver, FollowService.UnfollowObserver,
         FollowService.GetFollowersCountObserver, FollowService.GetFollowingCountObserver, UserService.LogoutObserver, StatusService.PostStatusObserver {
 
@@ -48,6 +49,11 @@ public class MainActivityPresenter implements FollowService.IsFollowerObserver, 
     @Override
     public void handleFailure(String message) {
         view.displayMessage("Error in Main Activity Presenter: " + message);
+    }
+
+    @Override
+    public void handleException(Exception exception) {
+        view.displayMessage("Exception in Main Activity Presenter: " + exception.getMessage());
     }
 
     // Presenter's link to follow service

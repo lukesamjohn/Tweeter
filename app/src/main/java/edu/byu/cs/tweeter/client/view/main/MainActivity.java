@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.client.view.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,6 +26,8 @@ import edu.byu.cs.tweeter.client.view.login.StatusDialogFragment;
 import edu.byu.cs.tweeter.client.view.util.ImageUtils;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import com.squareup.picasso.Picasso;
+
 
 /**
  * The main activity for the application. Contains tabs for feed, story, following, and followers.
@@ -32,6 +35,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class MainActivity extends AppCompatActivity implements StatusDialogFragment.Observer, MainActivityPresenter.View {
 
     public static final String CURRENT_USER_KEY = "CurrentUser";
+    private static final String LOG_TAG = "MainActivity";
 
     private MainActivityPresenter presenter;
 
@@ -140,9 +144,9 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
 
         TextView userAlias = findViewById(R.id.userAlias);
         userAlias.setText(selectedUser.getAlias());
-
+        Log.d(LOG_TAG, "User alias is: " + selectedUser.getAlias());
         ImageView userImageView = findViewById(R.id.userImage);
-        userImageView.setImageDrawable(ImageUtils.drawableFromByteArray(selectedUser.getImageBytes()));
+        Picasso.get().load(selectedUser.getImageUrl()).into(userImageView);
         User currUser = Cache.getInstance().getCurrUser();
 
         followeeCount = findViewById(R.id.followeeCount);

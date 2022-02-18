@@ -5,7 +5,7 @@ import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.client.presenter.views.AuthenticateView;
 
 //you have to make the class implement a login observer interface
-public class LoginPresenter extends AuthenticatePresenter implements UserService.LoginObserver {
+public class LoginPresenter extends AuthenticationPresenter implements UserService.LoginObserver {
 
     /**
      * A View interface for the LoginFragment to implement. Contains

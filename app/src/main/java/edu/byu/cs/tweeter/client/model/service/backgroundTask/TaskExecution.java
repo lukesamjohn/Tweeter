@@ -12,8 +12,7 @@ public class TaskExecution <T extends Runnable>{
     }
 
     public void executeTask() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(task);
+        BackgroundTaskUtils.runTask(task);
     }
 
 }

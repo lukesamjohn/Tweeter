@@ -30,10 +30,7 @@ public class FollowService {
         new TaskExecution<>(followersTask).executeTask();
     }
     private static class GetFollowersHandler extends PagedServiceHandler<User> {
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Get Followers Service";
-        }
+
         public GetFollowersHandler(GetFollowersObserver observer) {
             super(observer);
         }
@@ -47,10 +44,7 @@ public class FollowService {
         new TaskExecution<>(followingTask).executeTask();
     }
     public static class GetFolloweesHandler extends PagedServiceHandler<User> {
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Get Followees Service";
-        }
+
         public GetFolloweesHandler(GetFolloweesObserver observer) {
             super(observer);
         }
@@ -66,10 +60,6 @@ public class FollowService {
         new TaskExecution<>(isFollowerTask).executeTask();
     }
     private static class IsFollowerHandler extends BackgroundTaskHandler {
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Is Follower Service";
-        }
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             boolean isFollower = data.getBoolean(IsFollowerTask.IS_FOLLOWER_KEY);
@@ -91,10 +81,6 @@ public class FollowService {
        new TaskExecution<>(followTask).executeTask();
     }
     private static class FollowHandler extends BackgroundTaskHandler {
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Follow Service";
-        }
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             String message = "Adding " + followee.getName() + "...";
@@ -119,10 +105,6 @@ public class FollowService {
     // UnfollowHandler
     private static class UnfollowHandler extends BackgroundTaskHandler {
         @Override
-        protected String getFailedMessagePrefix() {
-            return "Is Follower Service";
-        }
-        @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             String message = "Removing " + followee.getName() + "...";
             ((UnfollowObserver) observer).unfollowSuccess(message, true, followee);
@@ -141,10 +123,7 @@ public class FollowService {
     }
     private static class GetFollowersCountHandler extends BackgroundTaskHandler {
 
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Get Followers Count Service";
-        }
+
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             int count = data.getInt(GetFollowersCountTask.COUNT_KEY);
@@ -160,10 +139,7 @@ public class FollowService {
         void getFollowingCountSuccess(int count);
     }
     private static class GetFollowingCountHandler extends BackgroundTaskHandler {
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Get Following Count Service";
-        }
+
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             int count = data.getInt(GetFollowersCountTask.COUNT_KEY);

@@ -35,10 +35,7 @@ public class StatusService {
         public GetFeedHandler(GetFeedObserver observer) {
             super(observer);
         }
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Get Feed";
-        }
+
     }
 
 
@@ -53,10 +50,7 @@ public class StatusService {
         public GetStoryHandler(GetStoryObserver observer) {
             super(observer);
         }
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Get Story";
-        }
+
     }
 
 
@@ -80,10 +74,7 @@ public class StatusService {
         public PostStatusHandler(PostStatusObserver observer) {
             super(observer);
         }
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Post Status Service";
-        }
+
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             ((PostStatusObserver)observer).postStatusSuccess("Successfully Posted!");

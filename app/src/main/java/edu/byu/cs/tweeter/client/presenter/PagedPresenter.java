@@ -8,7 +8,7 @@ import edu.byu.cs.tweeter.client.presenter.views.PagedView;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public abstract class PagedPresenter<T> extends AuthenticatedPresenter implements UserService.GetUserObserver, PagedObserver<T> {
+public abstract class PagedPresenter<T> extends AuthorizedPresenter implements UserService.GetUserObserver, PagedObserver<T> {
 
     protected static final int PAGE_SIZE = 10;
     protected T lastItem; //last status or last user
@@ -70,6 +70,15 @@ public abstract class PagedPresenter<T> extends AuthenticatedPresenter implement
     @Override
     public void handleFailure(String message) {
         String errorMessage = "Failed to retrieve new items to add: " + message;
+
+        pagedView.setLoading(false);
+        pagedView.displayMessage(errorMessage);
+        setLoading(false);
+    }
+
+    @Override
+    public void handleException(Exception exception) {
+        String errorMessage = "Failed to retrieve new items to add due to exception: " + exception.getMessage();
 
         pagedView.setLoading(false);
         pagedView.displayMessage(errorMessage);

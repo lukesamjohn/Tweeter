@@ -5,10 +5,10 @@ import edu.byu.cs.tweeter.client.presenter.views.AuthenticateView;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public abstract class AuthenticatePresenter extends PresenterBase implements AuthenticateObserver {
+public abstract class AuthenticationPresenter extends PresenterBase implements AuthenticateObserver {
 
     private final AuthenticateView aView = (AuthenticateView) view;
-    public AuthenticatePresenter(AuthenticateView view) {
+    public AuthenticationPresenter(AuthenticateView view) {
         super(view);
     }
 
@@ -22,6 +22,12 @@ public abstract class AuthenticatePresenter extends PresenterBase implements Aut
     @Override
     public void handleFailure(String message) {
         aView.displayErrorMessage("Login failed: " + message);
+    }
+
+    @Override
+    public void handleException(Exception exception) {
+        aView.displayErrorMessage("Exception occurred: " + exception.getMessage());
+
     }
 
     protected void clearMessages() {

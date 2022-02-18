@@ -36,10 +36,7 @@ public class UserService {
         public GetUserHandler(GetUserObserver observer) {
             super(observer);
         }
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Get User Service";
-        }
+
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             User user = (User) data.getSerializable(GetUserTask.USER_KEY);
@@ -59,10 +56,7 @@ public class UserService {
         public  LoginHandler(LoginObserver loginObserver) {
             super(loginObserver);
         }
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Login Service";
-        }
+
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             User loggedInUser = (User) data.getSerializable(LoginTask.USER_KEY);
@@ -83,10 +77,7 @@ public class UserService {
     }
     private static class RegisterHandler extends BackgroundTaskHandler {
         public RegisterHandler(RegisterObserver registerObserver) {super(registerObserver);}
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Register Service";
-        }
+
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             User registeredUser = (User) data.getSerializable(RegisterTask.USER_KEY);
@@ -110,10 +101,7 @@ public class UserService {
         public LogoutHandler(LogoutObserver observer) {
             super(observer);
         }
-        @Override
-        protected String getFailedMessagePrefix() {
-            return "Logout Service";
-        }
+
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             ((LogoutObserver) observer).logoutSuccess();

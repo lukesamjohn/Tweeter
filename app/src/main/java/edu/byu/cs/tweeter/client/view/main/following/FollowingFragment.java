@@ -28,6 +28,8 @@ import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.client.view.util.ImageUtils;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import com.squareup.picasso.Picasso;
+
 
 /**
  * The fragment that displays on the 'Following' tab.
@@ -162,7 +164,7 @@ public class FollowingFragment extends Fragment implements FollowingPresenter.Vi
          * @param user the user.
          */
         void bindUser(User user) {
-            userImage.setImageDrawable(ImageUtils.drawableFromByteArray(user.getImageBytes()));
+            Picasso.get().load(user.getImageUrl()).into(userImage);
             userAlias.setText(user.getAlias());
             userName.setText(user.getName());
         }

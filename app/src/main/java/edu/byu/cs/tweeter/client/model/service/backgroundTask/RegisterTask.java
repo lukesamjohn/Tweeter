@@ -35,7 +35,7 @@ public class RegisterTask extends AuthenticationTask {
     }
 
     @Override
-    protected Pair<User, AuthToken> runAuthenticationTask() {
+    protected Pair<User, AuthToken> doLogin() {
         User registeredUser = getFakeData().getFirstUser();
         AuthToken authToken = getFakeData().getAuthToken();
         return new Pair<>(registeredUser, authToken);

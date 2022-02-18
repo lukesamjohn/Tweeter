@@ -27,7 +27,6 @@ public class User implements Comparable<User>, Serializable {
     /**
      * Byte array containing the user's profile image (after download from web).
      */
-    private byte[] imageBytes;
 
     public User() {
     }
@@ -63,13 +62,6 @@ public class User implements Comparable<User>, Serializable {
         return imageUrl;
     }
 
-    public byte[] getImageBytes() {
-        return imageBytes;
-    }
-
-    public void setImageBytes(byte[] imageBytes) {
-        this.imageBytes = imageBytes;
-    }
 
     @Override
     public boolean equals(Object o) {

@@ -5,7 +5,7 @@ import android.widget.ImageView;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.client.presenter.views.AuthenticateView;
 
-public class RegisterPresenter extends AuthenticatePresenter implements UserService.RegisterObserver {
+public class RegisterPresenter extends AuthenticationPresenter implements UserService.RegisterObserver {
     /**
      * A View interface for the LoginFragment to implement. Contains
      * all the functions that the presenter should be able to call on the view

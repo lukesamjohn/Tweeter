@@ -16,7 +16,7 @@ public class LoginTask extends AuthenticationTask {
     }
 
     @Override
-    protected Pair<User, AuthToken> runAuthenticationTask() {
+    protected Pair<User, AuthToken> doLogin() {
         User loggedInUser = getFakeData().getFirstUser();
         AuthToken authToken = getFakeData().getAuthToken();
         return new Pair<>(loggedInUser, authToken);
