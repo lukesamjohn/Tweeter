@@ -59,7 +59,7 @@ public class FollowService {
                 follower, followee, new IsFollowerHandler(observer));
         new TaskExecution<>(isFollowerTask).executeTask();
     }
-    private static class IsFollowerHandler extends BackgroundTaskHandler {
+    private static class IsFollowerHandler extends BackgroundTaskHandler<ServiceObserver> {
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             boolean isFollower = data.getBoolean(IsFollowerTask.IS_FOLLOWER_KEY);
@@ -80,7 +80,7 @@ public class FollowService {
                 selectedUser, new FollowHandler(observer, selectedUser));
        new TaskExecution<>(followTask).executeTask();
     }
-    private static class FollowHandler extends BackgroundTaskHandler {
+    private static class FollowHandler extends BackgroundTaskHandler<ServiceObserver> {
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             String message = "Adding " + followee.getName() + "...";
@@ -103,7 +103,7 @@ public class FollowService {
         new TaskExecution<>(unfollowTask).executeTask();
     }
     // UnfollowHandler
-    private static class UnfollowHandler extends BackgroundTaskHandler {
+    private static class UnfollowHandler extends BackgroundTaskHandler<ServiceObserver> {
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {
             String message = "Removing " + followee.getName() + "...";
@@ -121,7 +121,7 @@ public class FollowService {
     public interface GetFollowersCountObserver extends ServiceObserver {
         void getFollowersCountSuccess(int count);
     }
-    private static class GetFollowersCountHandler extends BackgroundTaskHandler {
+    private static class GetFollowersCountHandler extends BackgroundTaskHandler<ServiceObserver> {
 
 
         @Override
@@ -138,7 +138,7 @@ public class FollowService {
     public interface GetFollowingCountObserver extends ServiceObserver {
         void getFollowingCountSuccess(int count);
     }
-    private static class GetFollowingCountHandler extends BackgroundTaskHandler {
+    private static class GetFollowingCountHandler extends BackgroundTaskHandler<ServiceObserver> {
 
         @Override
         protected void handleSuccessMessage(ServiceObserver observer, Bundle data) {

@@ -32,7 +32,7 @@ public class UserService {
                 alias, new GetUserHandler(observer));
         new TaskExecution<>(getUserTask).executeTask();
     }
-    private static class GetUserHandler extends BackgroundTaskHandler {
+    private static class GetUserHandler extends BackgroundTaskHandler<ServiceObserver> {
         public GetUserHandler(GetUserObserver observer) {
             super(observer);
         }
@@ -52,7 +52,7 @@ public class UserService {
         LoginTask loginTask = new LoginTask(alias, password, new LoginHandler(loginObserver));
         new TaskExecution<>(loginTask).executeTask();
     }
-    private static class LoginHandler extends BackgroundTaskHandler {
+    private static class LoginHandler extends BackgroundTaskHandler<ServiceObserver> {
         public  LoginHandler(LoginObserver loginObserver) {
             super(loginObserver);
         }
@@ -75,7 +75,7 @@ public class UserService {
         RegisterTask registerTask = new RegisterTask(firstName, lastName, alias, password, imageToByteArray(image), new RegisterHandler(registerObserver));
         new TaskExecution<>(registerTask).executeTask();
     }
-    private static class RegisterHandler extends BackgroundTaskHandler {
+    private static class RegisterHandler extends BackgroundTaskHandler<ServiceObserver> {
         public RegisterHandler(RegisterObserver registerObserver) {super(registerObserver);}
 
         @Override
@@ -97,7 +97,7 @@ public class UserService {
         LogoutTask logoutTask = new LogoutTask(authToken, new LogoutHandler(observer));
         new TaskExecution<>(logoutTask).executeTask();
     }
-    private class LogoutHandler extends BackgroundTaskHandler {
+    private static class LogoutHandler extends BackgroundTaskHandler<ServiceObserver> {
         public LogoutHandler(LogoutObserver observer) {
             super(observer);
         }

@@ -9,7 +9,7 @@ import edu.byu.cs.tweeter.client.model.service.ServiceObserver;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.PagedTask;
 
-public abstract class PagedServiceHandler<T> extends BackgroundTaskHandler{
+public abstract class PagedServiceHandler<T> extends BackgroundTaskHandler<ServiceObserver>{
     PagedObserver<T> pagedObserver = (PagedObserver<T>) observer;
     public PagedServiceHandler(ServiceObserver observer) {
         super(observer);

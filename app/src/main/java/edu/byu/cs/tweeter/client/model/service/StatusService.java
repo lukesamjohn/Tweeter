@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFeedTask;
@@ -70,7 +72,7 @@ public class StatusService {
             observer.handleFailure(ex.getMessage());
         }
     }
-    private class PostStatusHandler extends BackgroundTaskHandler {
+    private static class PostStatusHandler extends BackgroundTaskHandler<ServiceObserver> {
         public PostStatusHandler(PostStatusObserver observer) {
             super(observer);
         }
@@ -86,10 +88,10 @@ public class StatusService {
     // Helper Functions
 
     public String getFormattedDateTime() throws ParseException {
-        SimpleDateFormat userFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        SimpleDateFormat statusFormat = new SimpleDateFormat("MMM d yyyy h:mm aaa");
+        SimpleDateFormat userFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat statusFormat = new SimpleDateFormat("MMM d yyyy h:mm aaa", Locale.ENGLISH);
 
-        return statusFormat.format(userFormat.parse(LocalDate.now().toString() + " " + LocalTime.now().toString().substring(0, 8)));
+        return statusFormat.format(Objects.requireNonNull(userFormat.parse(LocalDate.now().toString() + " " + LocalTime.now().toString().substring(0, 8))));
     }
 
     public List<String> parseURLs(String post) throws MalformedURLException {
